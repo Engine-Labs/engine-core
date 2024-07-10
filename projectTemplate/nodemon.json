@@ -1,6 +1,6 @@
 {
   "watch": ["src/server.ts", "src/**/*"],
   "ext": "ts,json",
-  "exec": "tsx src/server.ts --tsconfig tsconfig.json -- -p 10000",
+  "exec": "bun src/server.ts --tsconfig tsconfig.json -- -p 8080",
   "signal": "SIGTERM"
 }

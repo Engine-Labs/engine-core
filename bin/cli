@@ -3,7 +3,8 @@
 cd "$(dirname "$0")"
 cd ../
 
-if [ ! -d ./project ] || [ -z "$(ls -A ./project)" ]; then
+if [ ! -d ./project ]; then
+  mkdir ./project
   cp -r ./projectTemplate/* ./project
 fi
 
@@ -11,4 +12,4 @@ docker rm engine-core >/dev/null 2>&1
 
 docker build -t engine-core .
 
-docker run --rm -it --name engine-core -p 8080:8080 --env-file .env.local -v ./project:/usr/src/app/project engine-core
+docker run --rm -it --name engine-core -p 8080:8080 -v ./project:/usr/src/app/project engine-core

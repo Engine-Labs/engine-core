@@ -1,0 +1,14 @@
+{
+  "name": "engine-core",
+  "type": "module",
+  "scripts": {
+    "start": "bun src/cli.ts",
+    "project:start": "cd project && bun run start"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
