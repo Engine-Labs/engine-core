@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+IMAGE_NAME="engine-core"
+CONTAINER_NAME="engine-core"
+
+cd "$(dirname "$0")"
+cd ../
+
+docker rmi engine-core >/dev/null 2>&1
+
+if ! docker images | grep -q "$IMAGE_NAME"; then
+  echo "Building $IMAGE_NAME image..."
+
+  docker build -t "$IMAGE_NAME" . >/dev/null 2>&1
+fi
+
+echo "Starting $CONTAINER_NAME container..."
+
+docker rm "$CONTAINER_NAME" >/dev/null 2>&1
+
+docker run --rm -it --name "$CONTAINER_NAME" -p 8080:8080 -v ./project:/usr/src/app/project "$IMAGE_NAME"
