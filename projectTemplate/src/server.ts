@@ -4,7 +4,7 @@ import fastifySwaggerUi from "@fastify/swagger-ui";
 import app from "./app";
 import { loadRoutes } from "./routes";
 
-const port = parseInt(process.env.PORT || "8080");
+const port = parseInt(process.env.PORT || "8888");
 const host = "::";
 
 const apiUrl = process.env.API_URL || `http://0.0.0.0:${port}`;
