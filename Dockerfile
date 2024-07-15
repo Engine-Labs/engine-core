@@ -14,6 +14,6 @@ RUN bun install --ci
 
 COPY . .
 
-EXPOSE 8080
+EXPOSE 8888
 
 ENTRYPOINT ["bin/entrypoint.sh"]
