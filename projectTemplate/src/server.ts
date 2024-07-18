@@ -4,7 +4,7 @@ import fastifySwaggerUi from "@fastify/swagger-ui";
 import app from "./app";
 import { loadRoutes } from "./routes";
 
-const port = parseInt(process.env.PORT || "8888");
+const port = parseInt(process.env.PORT || "8080");
 const host = "::";
 
 const apiUrl = process.env.API_URL || `http://0.0.0.0:${port}`;
@@ -23,7 +23,7 @@ export const swaggerOptions: FastifyDynamicSwaggerOptions = {
   },
 };
 export const swaggerUiOptions = {
-  routePrefix: "/api/docs",
+  routePrefix: "/docs",
   exposeRoute: true,
 };
 
@@ -38,7 +38,7 @@ export async function setupAndRun() {
 
   const routes = await loadRoutes();
   for (const route of routes) {
-    app.register(route, { prefix: "/api" });
+    app.register(route);
   }
 
   app.listen({ host: host, port: port }, (err, address) => {

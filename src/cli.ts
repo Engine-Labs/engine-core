@@ -1,14 +1,29 @@
 import "dotenv/config";
 import inquirer from "inquirer";
+import { select } from "@inquirer/prompts";
 import { Readable } from "stream";
 import { Gpt4Adapter } from "./adapters/gpt4Adapter";
 import { chat } from "./chat";
-import { logger } from "./constants";
-import { DemoStrategy } from "./strategies/demoStrategy/demoStrategy";
+import { chatStrategies, logger } from "./constants";
 import type { ChatParams, Message } from "./types/chat";
 
 async function main() {
   logger.level = "info";
+  const chatStategyKey = await select({
+    message: "Select a chat strategy",
+    choices: [
+      {
+        name: "Demo Strategy",
+        value: "demoStrategy",
+        description: "Simple example strategy with a single tool function",
+      },
+      {
+        name: "Backend Strategy",
+        value: "backend",
+        description: "Build a FastifyAPI/SQLite3 backend",
+      },
+    ],
+  });
 
   const chatLoop = async () => {
     process.stdout.write("\n\n");
@@ -64,7 +79,7 @@ async function main() {
       prevStreamData = streamData;
     });
 
-    await cliChat(userMessage, stream);
+    await cliChat(chatStategyKey, userMessage, stream);
     await chatLoop();
   };
 
@@ -76,12 +91,24 @@ main().catch((error) => {
   process.exit(1);
 });
 
-async function cliChat(message: Message, stream: Readable) {
+async function cliChat(
+  strategyKey: string,
+  userMessage: Message,
+  stream: Readable
+) {
+  const ChatStrategy = chatStrategies[strategyKey];
+
+  if (!ChatStrategy) {
+    process.stdout.write("Invalid chat strategy - exiting :(\n");
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    process.exit(1);
+  }
+
   const params: ChatParams = {
-    message: message,
+    userMessage: userMessage,
     stream: stream,
     chatAdapter: new Gpt4Adapter(),
-    chatStrategy: new DemoStrategy(),
+    chatStrategy: new ChatStrategy(),
   };
 
   return await chat(params);

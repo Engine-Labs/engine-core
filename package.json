@@ -13,8 +13,10 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.24.3",
+    "@types/fs-extra": "^11.0.4",
     "ajv": "^8.17.1",
     "dotenv": "^16.4.5",
+    "fs-extra": "^11.2.0",
     "inquirer": "^10.0.1",
     "openai": "^4.52.7",
     "pino": "^9.3.1"

@@ -6,7 +6,6 @@ import { ANTHROPIC_API_KEY, CHAT_HISTORY_FILE, logger } from "../../constants";
 import type {
   ChatAdapter,
   ChatAdapterChatParams,
-  chatError,
   ChatResponse,
   ChatStreamData,
   HistoryMessage,
@@ -30,13 +29,6 @@ export class ClaudeBaseAdapter implements ChatAdapter {
 
   isToolCall(message: Message): boolean {
     return message.tool_calls !== undefined && message.tool_calls.length > 0;
-  }
-
-  formatError(error: any): chatError {
-    return {
-      chatAdapter: this.llmModel(),
-      message: error.message,
-    };
   }
 
   async toolCallResponseMessages(

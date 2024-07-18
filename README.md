@@ -9,3 +9,9 @@ expose one port for the fastify app
 
 1. Ensure Docker is installed and running
 2. Run `bin/cli`
+
+TODO:
+
+- make strategy and adapter args to cli
+- nice prompts if missing API KEYS
+- add dba strategy

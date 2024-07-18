@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 oven/bun:canary
+FROM oven/bun:canary
 
 WORKDIR /usr/src/app
 
@@ -14,6 +14,6 @@ RUN bun install --ci
 
 COPY . .
 
-EXPOSE 8888
+EXPOSE 8080
 
 ENTRYPOINT ["bin/entrypoint.sh"]
