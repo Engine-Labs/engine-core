@@ -1,4 +1,3 @@
-import { setChatStatus } from "./chatStatus";
 import { getCompleteChatHistory } from "./chatUtils";
 import type {
   ChatAdapterChatParams,
@@ -8,13 +7,13 @@ import type {
 } from "./types/chat";
 
 export async function chat({
-  message: message,
-  stream: stream,
+  userMessage: userMessage,
   chatAdapter: chatAdapter,
   chatStrategy: chatStrategy,
+  stream: stream,
 }: ChatParams): Promise<void> {
   // Save the incoming user message to the chat history
-  chatAdapter.saveMessageToChatHistory(message);
+  chatAdapter.saveMessageToChatHistory(userMessage);
   const completeChatHistory = getCompleteChatHistory();
   const chatHistory: Message[] =
     chatStrategy.getChatHistory(completeChatHistory);
@@ -24,7 +23,6 @@ export async function chat({
   );
 
   try {
-    setChatStatus("Generating response...");
     let chatResponse: ChatResponse = await chatAdapter.chat(
       chatParams,
       stream,
@@ -36,21 +34,19 @@ export async function chat({
       chatAdapter.isToolCall(chatResponse.lastCompletion)
     ) {
       // allow tool call messages to be processed when the chat is cancelled
-      setChatStatus("Handling tool calls...");
       const toolCallResponseMessages: Message[] =
         await chatAdapter.toolCallResponseMessages(
           chatResponse.lastCompletion,
           chatParams.tools
         );
+
       chatParams = await chatStrategy.call(
         chatResponse.messages,
         toolCallResponseMessages
       );
 
-      setChatStatus("Generating response...");
       chatResponse = await chatAdapter.chat(chatParams, stream, chatStrategy);
     }
-    setChatStatus("Finishing up...");
     await chatStrategy.onRunComplete(chatAdapter.runMessages);
   } catch (error) {
     throw error;

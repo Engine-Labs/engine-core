@@ -10,7 +10,6 @@ import { CHAT_HISTORY_FILE, logger, OPENAI_API_KEY } from "../constants";
 import type {
   ChatAdapter,
   ChatAdapterChatParams,
-  chatError,
   ChatResponse,
   ChatStreamData,
   HistoryMessage,
@@ -28,13 +27,6 @@ export class Gpt4Adapter implements ChatAdapter {
 
   isToolCall(message: Message): boolean {
     return message.tool_calls !== undefined && message.tool_calls.length > 0;
-  }
-
-  formatError(error: any): chatError {
-    return {
-      chatAdapter: this.llmModel(),
-      message: error.message,
-    };
   }
 
   async toolCallResponseMessages(

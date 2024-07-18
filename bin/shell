@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+cd "$(dirname "$0")"
+cd ../
+
+CONTAINER_NAME="engine-core"
+
+if [ "$(docker ps --filter "name=$CONTAINER_NAME" --filter "status=running" -q)" ]; then
+  docker exec -it $CONTAINER_NAME bash
+else
+  echo "You need to start the container first. Run 'bin/cli' in another terminal."
+fi

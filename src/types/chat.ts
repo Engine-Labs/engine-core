@@ -1,6 +1,5 @@
 import { type Readable } from "stream";
 
-// CORE TYPES
 export type LastCompletion = Message | null;
 
 export type ChatResponse = {
@@ -21,10 +20,10 @@ export type HistoryMessage = Message & {
 };
 
 export type ChatParams = {
-  message: Message;
-  stream: Readable;
+  userMessage: Message;
   chatAdapter: ChatAdapter;
   chatStrategy: ChatStrategy;
+  stream: Readable;
 };
 
 export type CallToolFunctionParams = {
@@ -54,7 +53,6 @@ interface GetFunctionParameters {
 export interface ToolFunction {
   name: string;
   description: string;
-  staticContext: string;
   getParameters: GetFunctionParameters;
   requiredEnvVars?: string[];
   run: ToolFunctionRunner;
@@ -63,11 +61,6 @@ export interface ToolFunction {
 export interface ToolFunctionResponse {
   responseText: string;
   isError: boolean;
-}
-
-export interface chatError {
-  chatAdapter: string;
-  message: string;
 }
 
 export interface ChatAdapter {
@@ -84,7 +77,6 @@ export interface ChatAdapter {
     chatStrategy: ChatStrategy
   ): Promise<ChatResponse>;
   saveMessageToChatHistory(message: Message): void;
-  formatError(error: any): chatError;
 }
 
 export type ChatAdapterChatParams = {
@@ -119,5 +111,3 @@ export type ChatState = {
 };
 
 export type ChatStrategyConstructor = new (...args: any[]) => ChatStrategy;
-
-export type ChatStrategyInitFunction = () => Promise<void>;

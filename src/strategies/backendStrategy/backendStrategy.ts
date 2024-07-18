@@ -5,10 +5,9 @@ import type {
   Message,
   ToolFunction,
 } from "../../types/chat";
-import { getWidgetsToolFunction } from "./toolFunctions/getWidgets/getWidgetsToolFunctionDefinition";
 
-export class DemoStrategy implements ChatStrategy {
-  toolFunctions = [getWidgetsToolFunction];
+export class BackendStrategy implements ChatStrategy {
+  toolFunctions = [];
 
   toolFunctionMap() {
     return Object.fromEntries(
