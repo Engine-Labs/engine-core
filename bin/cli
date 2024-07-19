@@ -11,11 +11,6 @@ docker rmi engine-core >/dev/null 2>&1
 if ! docker images | grep -q "$IMAGE_NAME"; then
   echo "Building $IMAGE_NAME image..."
 
-  if [ ! -d ./project ]; then
-    mkdir ./project
-    cp -r ./projectTemplate/* ./project
-  fi
-
   docker build -t "$IMAGE_NAME" . >/dev/null 2>&1
 fi
 

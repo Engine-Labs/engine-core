@@ -10,6 +10,10 @@ import { getWidgetsToolFunction } from "./toolFunctions/getWidgets/getWidgetsToo
 export class DemoStrategy implements ChatStrategy {
   toolFunctions = [getWidgetsToolFunction];
 
+  async init() {
+    return;
+  }
+
   toolFunctionMap() {
     return Object.fromEntries(
       this.toolFunctions.map((toolFunction) => [
@@ -25,10 +29,6 @@ export class DemoStrategy implements ChatStrategy {
         (toolFunction) => toolFunction.name === toolFunctionName
       ) ?? null
     );
-  }
-
-  requiresInit(): boolean {
-    return false;
   }
 
   async onRunComplete(_messages: Message[]): Promise<void> {
@@ -47,7 +47,10 @@ export class DemoStrategy implements ChatStrategy {
     let tools = this.getTools();
     if (this.callCount >= MAX_TOOL_CALL_ITERATIONS) {
       logger.info(`Maximum iterations reached: ${this.callCount}`);
-      tools = [];
+      const lastToolCallResponse =
+        toolCallResponses[toolCallResponses.length - 1];
+      lastToolCallResponse.content +=
+        "\nYou've reached the maximum number of tool calls, do not call any more tools now, update the user with progress so far instead and check if they wish to continue";
     }
 
     // If the first message is not the system prompt then prepend it

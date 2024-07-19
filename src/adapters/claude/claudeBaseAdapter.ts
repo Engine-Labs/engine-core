@@ -43,7 +43,6 @@ export class ClaudeBaseAdapter implements ChatAdapter {
 
     for (const toolCall of message.tool_calls) {
       const toolName = toolCall.function.name;
-      logger.debug(`Responding to tool call: ${toolName}`);
 
       let toolFunctionParams: any;
       try {
@@ -77,10 +76,6 @@ export class ClaudeBaseAdapter implements ChatAdapter {
       this.saveMessageToChatHistory(message);
     }
 
-    logger.debug(
-      `Tool call responses: ${JSON.stringify(toolCallResponseMessages)}`
-    );
-
     return toolCallResponseMessages;
   }
 
@@ -101,17 +96,7 @@ export class ClaudeBaseAdapter implements ChatAdapter {
 
     messages = messages.filter((message) => message.role !== "system");
 
-    logger.debug(
-      `ClaudeOpusAdapter.chat - raw messages: ${JSON.stringify(messages)}`
-    );
-
     const claudeMessages = convertMessagesToClaudeMessages(messages);
-
-    logger.debug(
-      `ClaudeOpusAdapter.chat - converted messages: ${JSON.stringify(
-        claudeMessages
-      )}`
-    );
 
     let claudeChatParams: MessageStreamParams = {
       max_tokens: 1024,
@@ -180,7 +165,6 @@ export class ClaudeBaseAdapter implements ChatAdapter {
         },
       });
     }
-    logger.debug(`Tool params: ${JSON.stringify(toolParams)}`);
     return toolParams;
   }
 
