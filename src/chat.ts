@@ -1,3 +1,5 @@
+import { endChatState, setChatInProgress } from "./chatState";
+import { resetChatStatus } from "./chatStatus";
 import { getCompleteChatHistory } from "./chatUtils";
 import type {
   ChatAdapterChatParams,
@@ -23,6 +25,7 @@ export async function chat({
   );
 
   try {
+    setChatInProgress();
     let chatResponse: ChatResponse = await chatAdapter.chat(
       chatParams,
       stream,
@@ -50,5 +53,8 @@ export async function chat({
     await chatStrategy.onRunComplete(chatAdapter.runMessages);
   } catch (error) {
     throw error;
+  } finally {
+    endChatState();
+    resetChatStatus();
   }
 }

@@ -16,7 +16,6 @@ export async function callToolFunction(
   toolFunctionParams: any,
   tools: ToolFunction[]
 ): Promise<ToolFunctionResponse> {
-  logger.warn(tools.map((tool) => tool.name).join(", "));
   const tool = tools.find((tool) => tool.name === toolFunctionName);
 
   if (!tool) {

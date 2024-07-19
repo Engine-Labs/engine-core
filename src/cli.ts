@@ -2,25 +2,43 @@ import "dotenv/config";
 import inquirer from "inquirer";
 import { select } from "@inquirer/prompts";
 import { Readable } from "stream";
-import { Gpt4Adapter } from "./adapters/gpt4Adapter";
 import { chat } from "./chat";
-import { chatStrategies, logger } from "./constants";
+import { chatAdapters, chatStrategies, logger } from "./constants";
 import type { ChatParams, Message } from "./types/chat";
 
 async function main() {
   logger.level = "info";
-  const chatStategyKey = await select({
+  const chatStrategyKey = await select({
     message: "Select a chat strategy",
     choices: [
+      {
+        name: "Shell Strategy",
+        value: "shellStrategy",
+        description: "Build anything with a shell powered LLM",
+      },
       {
         name: "Demo Strategy",
         value: "demoStrategy",
         description: "Simple example strategy with a single tool function",
       },
+    ],
+  });
+
+  const ChatStrategy = chatStrategies[chatStrategyKey];
+  await new ChatStrategy().init();
+
+  const chatApapterKey = await select({
+    message: "Select a chat adapter",
+    choices: [
       {
-        name: "Backend Strategy",
-        value: "backend",
-        description: "Build a FastifyAPI/SQLite3 backend",
+        name: "Claude Sonnet",
+        value: "claudeSonnet",
+        description: "Claude Sonnet chat adapter",
+      },
+      {
+        name: "GPT-4",
+        value: "gpt4",
+        description: "GPT-4 chat adapter",
       },
     ],
   });
@@ -67,9 +85,9 @@ async function main() {
 
       if (streamData.type === "tool") {
         if (streamData.tool.name) {
-          process.stdout.write(
-            `\n\nCALLING TOOL FUNCTION: ${streamData.tool.name}\n`
-          );
+          // process.stdout.write(
+          //   `\n\nCALLING TOOL FUNCTION: ${streamData.tool.name}\n`
+          // );
         }
         if (streamData.tool.content) {
           process.stdout.write(streamData.tool.content);
@@ -79,7 +97,7 @@ async function main() {
       prevStreamData = streamData;
     });
 
-    await cliChat(chatStategyKey, userMessage, stream);
+    await cliChat(chatStrategyKey, chatApapterKey, userMessage, stream);
     await chatLoop();
   };
 
@@ -92,11 +110,13 @@ main().catch((error) => {
 });
 
 async function cliChat(
-  strategyKey: string,
+  chatStrategyKey: string,
+  chatAdapterKey: string,
   userMessage: Message,
   stream: Readable
 ) {
-  const ChatStrategy = chatStrategies[strategyKey];
+  const ChatStrategy = chatStrategies[chatStrategyKey];
+  const ChatAdapter = chatAdapters[chatAdapterKey];
 
   if (!ChatStrategy) {
     process.stdout.write("Invalid chat strategy - exiting :(\n");
@@ -104,10 +124,16 @@ async function cliChat(
     process.exit(1);
   }
 
+  if (!ChatAdapter) {
+    process.stdout.write("Invalid chat adapter - exiting :(\n");
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    process.exit(1);
+  }
+
   const params: ChatParams = {
     userMessage: userMessage,
     stream: stream,
-    chatAdapter: new Gpt4Adapter(),
+    chatAdapter: new ChatAdapter(),
     chatStrategy: new ChatStrategy(),
   };
 

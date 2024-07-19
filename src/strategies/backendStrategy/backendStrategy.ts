@@ -1,13 +1,27 @@
-import { logger, MAX_TOOL_CALL_ITERATIONS } from "../../constants";
+import { copySync, ensureDirSync, existsSync } from "fs-extra";
+import path from "path";
+import { logger, MAX_TOOL_CALL_ITERATIONS, PROJECT_DIR } from "../../constants";
 import type {
   ChatAdapterChatParams,
   ChatStrategy,
   Message,
   ToolFunction,
 } from "../../types/chat";
+import { migrateToolFunction } from "./toolFunctions/migrateDatabase/migrateDatabaseFunctionDefinition";
 
 export class BackendStrategy implements ChatStrategy {
-  toolFunctions = [];
+  toolFunctions = [migrateToolFunction];
+
+  async init() {
+    // TODO: bun install and migrate
+    const templateDir = path.normalize(
+      path.resolve(process.cwd(), "backendStrategyTemplate")
+    );
+    if (!existsSync(PROJECT_DIR)) {
+      ensureDirSync(PROJECT_DIR);
+      copySync(templateDir, PROJECT_DIR);
+    }
+  }
 
   toolFunctionMap() {
     return Object.fromEntries(
@@ -26,10 +40,6 @@ export class BackendStrategy implements ChatStrategy {
     );
   }
 
-  requiresInit(): boolean {
-    return false;
-  }
-
   async onRunComplete(_messages: Message[]): Promise<void> {
     return;
   }
@@ -46,7 +56,10 @@ export class BackendStrategy implements ChatStrategy {
     let tools = this.getTools();
     if (this.callCount >= MAX_TOOL_CALL_ITERATIONS) {
       logger.info(`Maximum iterations reached: ${this.callCount}`);
-      tools = [];
+      const lastToolCallResponse =
+        toolCallResponses[toolCallResponses.length - 1];
+      lastToolCallResponse.content +=
+        "\nYou've reached the maximum number of tool calls, do not call any more tools now, update the user with progress so far instead and check if they wish to continue";
     }
 
     // If the first message is not the system prompt then prepend it

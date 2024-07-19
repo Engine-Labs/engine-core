@@ -1,4 +1,5 @@
 import { ToolFunction } from "../../../../types/chat";
+import { createMigration } from "./migrateDatabaseFuntion";
 
 const name = "migrateDatabase";
 

@@ -91,7 +91,6 @@ export type LastToolCall = {
 
 export interface ChatStrategy {
   toolFunctions: ToolFunction[];
-  requiresInit(): boolean;
   call(
     messages: Message[],
     toolCallResponses: Message[]
@@ -100,6 +99,7 @@ export interface ChatStrategy {
   getToolFunctionByName(toolFunctionName: string): ToolFunction | null;
   onRunComplete(messages: Message[]): Promise<void>;
   getChatHistory(completeHistory: HistoryMessage[]): Message[];
+  init(): Promise<void>;
 }
 
 export type ChatState = {
@@ -110,4 +110,5 @@ export type ChatState = {
   perRunToolErrorCount: number;
 };
 
+export type ChatAdapterConstructor = new (...args: any[]) => ChatAdapter;
 export type ChatStrategyConstructor = new (...args: any[]) => ChatStrategy;

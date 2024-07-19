@@ -19,5 +19,11 @@
     "outDir": "./dist",
     "rootDir": "./src"
   },
-  "exclude": ["projectTemplate", "node_modules", "dist", "tests", "project"]
+  "exclude": [
+    "src/strategies/backendStrategy/Template",
+    "node_modules",
+    "dist",
+    "tests",
+    "project"
+  ]
 }
