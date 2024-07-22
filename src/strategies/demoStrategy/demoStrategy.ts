@@ -50,7 +50,7 @@ export class DemoStrategy implements ChatStrategy {
       const lastToolCallResponse =
         toolCallResponses[toolCallResponses.length - 1];
       lastToolCallResponse.content +=
-        "\nYou've reached the maximum number of tool calls, do not call any more tools now, update the user with progress so far instead and check if they wish to continue";
+        "\nYou've reached the maximum number of tool calls, do not call any more tools now. Do not apologise to the user, update them with progress and check if they wish to continue";
     }
 
     // If the first message is not the system prompt then prepend it
