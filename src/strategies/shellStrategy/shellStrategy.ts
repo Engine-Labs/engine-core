@@ -1,4 +1,6 @@
 import { ensureDirSync } from "fs-extra";
+import Handlebars from "handlebars";
+import { getRunToolErrorCount } from "../../chatState";
 import {
   logger,
   MAX_TOOL_CALL_ITERATIONS,
@@ -11,11 +13,9 @@ import type {
   Message,
   ToolFunction,
 } from "../../types/chat";
-import { killProcessToolFunction } from "./toolFunctions/killProcess/killProcessFunctionDefinition";
 import { runProcessToolFunction } from "./toolFunctions/runProcess/runProcessFunctionDefinition";
 import { shellExecToolFunction } from "./toolFunctions/shellExec/shellExecFunctionDefinition";
 import { writeFileToolFunction } from "./toolFunctions/writeFile/writeFileFunctionDefinition";
-import { getRunToolErrorCount } from "../../chatState";
 
 export class ShellStrategy implements ChatStrategy {
   async init() {
@@ -23,9 +23,8 @@ export class ShellStrategy implements ChatStrategy {
   }
 
   toolFunctions = [
-    shellExecToolFunction,
     runProcessToolFunction,
-    killProcessToolFunction,
+    shellExecToolFunction,
     writeFileToolFunction,
   ];
 
@@ -56,16 +55,13 @@ export class ShellStrategy implements ChatStrategy {
     messages: Message[],
     toolCallResponses: Message[]
   ): Promise<ChatAdapterChatParams> {
-    // this basic implementation just returns the vanilla system prompt, messages, and tools
-    // i.e. attempts nothing dynamic, a standard continuous chat
-
     let tools = this.getTools();
     if (this.callCount >= MAX_TOOL_CALL_ITERATIONS) {
       logger.info(`Maximum iterations reached: ${this.callCount}`);
       const lastToolCallResponse =
         toolCallResponses[toolCallResponses.length - 1];
       lastToolCallResponse.content +=
-        "\nYou've reached the maximum number of tool calls, do not call any more tools now, update the user with progress so far instead and check if they wish to continue";
+        "\nYou've reached the maximum number of tool calls, do not call any more tools now. Do not apologise to the user, update them with progress and check if they wish to continue";
     }
 
     const runToolErrorCount = getRunToolErrorCount();
@@ -74,14 +70,14 @@ export class ShellStrategy implements ChatStrategy {
       const lastToolCallResponse =
         toolCallResponses[toolCallResponses.length - 1];
       lastToolCallResponse.content +=
-        "\nYou've reached the maximum number of tool errors for this run, do not call any more tools now, update the user with progress so far instead and check if they wish to continue";
+        "\nYou've reached the maximum number of tool errors for this run. Do not apologise to the user, update them with progress and check if they wish to continue";
     }
 
     // If the first message is not the system prompt then prepend it
     if (!messages[0] || messages[0].role !== "system") {
       const systemPromptMessage: Message = {
         role: "system",
-        content: this.getSystemPrompt(),
+        content: await this.getSystemPrompt(),
       };
       messages.unshift(systemPromptMessage);
     }
@@ -102,28 +98,65 @@ export class ShellStrategy implements ChatStrategy {
     return this.toolFunctions;
   }
 
-  private getSystemPrompt() {
-    return `You are software engineer who has been tasked with building any software project the user requires.
+  private async getSystemPrompt() {
+    const promptTemplate = `
+You are an AI assistant acting as a skilled software engineer. Your task is to build any software project the user requires. Follow these instructions carefully:
 
-Example projects include a building a full stack web application with SQLite database, a REST API, and a React frontend.
+1. Available tools and system setup:
+- You have root Linux shell access to the project directory.
+- You can use any shell command, install programs, and manage packages.
+- The following are pre-installed: wget, curl, unzip, sqlite3, tree, lsof, procps, libssl-dev, git, build-essential, python3, python3-pip, python3-venv, rust, nodejs, yarn, bun.
+- Do not use sudo as you already have root access.
 
-You will likely be instructed to or select a popular programming language and framework to build the project.
+2. Project directory review:
+- First, review the context of the project directory.
+- Determine if you're starting a new project or continuing an existing one.
+- Do not overwrite existing work without confirmation.
 
-You have access to a project directory where you should do all your work.
+3. Language and framework selection:
+- If instructed, use the specified programming language and framework.
+- Otherwise, choose based on the project requirements.
 
-The tools provided include giving you root linux shell access to the directory, you can perform any commands you wish to help
-create the project, including installing any programs or packages you might need such as Rust, Python, pip, npm, yarn, etc.
+4. Project development:
+- Work step-by-step, keeping the user informed of your progress.
+- Use appropriate tool functions for file operations and process management.
 
-Given you have root access, you do not need to use sudo.
+5. Using tool functions:
+- Use provided tool functions for writing files, starting, and stopping processes.
+- Do not use the shell to write files or manage processes directly.
 
-IMPORTANT: Do not use the shell to write files or start or stop process, use the tools provided, otherwise use any shell command you like.
+6. Error handling and user interaction:
+- If a tool call fails, inform the user of the error and ask if they want to continue.
+- If commands don't work as expected, stop and check with the user before proceeding.
 
-YOU MUST NEVER run a blocking process such as example 'npm run dev', 'cargo run', 'python manage.py runserver' etc.) with the shell, ALWAYS use therun the  runProcess tool function, otherwise the chat will hang.
+7. Running processes and port exposure:
+- Always use the runProcess tool function for blocking processes.
+- For webservers or processes exposing ports, use port 8080 and IP address 0.0.0.0.
 
-If you want to run a process that exposes a port, like a webserver, always choose port 8080 and the IP address 0.0.0.0.
+8. Code compilation and testing:
+- Assert that your code compiles before running it.
+- For Python scripts, use 'python3 -m py_compile script.py' before execution.
+- For Rust, use 'cargo build' before running the binary.
+- For other languages, use the appropriate compilation command.
 
-Work step by step with the user, if a tool call fails, update the user with the error and check if they wish to continue.
+9. Step-by-step work with the user:
+- Provide clear updates on your progress.
+- Ask for user input or confirmation when necessary.
 
-If commands have not worked as expected stop and check with the user, don't try and make non-idomatic fixes.`;
+10. Handling failures and continuing:
+- If issues arise, provide a brief update and ask the user if they wish to continue.
+- Avoid excessive apologies; focus on problem-solving and progress.
+
+Remember to always use the provided tool functions for file operations and process management. Do not use the shell for these tasks. Work systematically and keep the user informed throughout the development process.
+`;
+
+    try {
+      const systemPromptTemplate = Handlebars.compile(promptTemplate);
+      let systemPromptRendered = systemPromptTemplate({});
+      return systemPromptRendered;
+    } catch (e) {
+      logger.error(e);
+      throw new Error("Shell strategy system prompt not found");
+    }
   }
 }
