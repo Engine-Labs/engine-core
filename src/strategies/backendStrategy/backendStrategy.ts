@@ -1,26 +1,72 @@
-import { copySync, ensureDirSync, existsSync } from "fs-extra";
+import { exec as originalExec, spawn } from "child_process";
+import { copySync, ensureDirSync, readdirSync } from "fs-extra";
 import path from "path";
-import { logger, MAX_TOOL_CALL_ITERATIONS, PROJECT_DIR } from "../../constants";
+import { promisify } from "util";
+import { isDirectoryEmptySync } from "../../chatUtils";
+import {
+  logger,
+  MAX_TOOL_CALL_ITERATIONS,
+  PROJECT_API_MIGRATIONS_DIR,
+  PROJECT_DIR,
+} from "../../constants";
 import type {
   ChatAdapterChatParams,
   ChatStrategy,
   Message,
   ToolFunction,
 } from "../../types/chat";
+import { deleteBackendFileToolFunction } from "./toolFunctions/deleteBackendFile/deleteBackendFileFunctionDefinition";
+import { editBackendFileToolFunction } from "./toolFunctions/editBackendFile/editBackendFileFunctionDefinition";
+import { executeSqlToolFunction } from "./toolFunctions/executeSql/executeSqlFunctionDefinition";
+import { dbMigrate } from "./toolFunctions/migrateDatabase/migrateDatabaseFunction";
 import { migrateToolFunction } from "./toolFunctions/migrateDatabase/migrateDatabaseFunctionDefinition";
+import { planBackendFileChangesToolFunction } from "./toolFunctions/planBackendFileChanges/planBackendFileChangesFunctionDefinition";
+import { writeBackendFileToolFunction } from "./toolFunctions/writeBackendFile/writeBackendFileFunctionDefinition";
+
+const exec = promisify(originalExec);
 
 export class BackendStrategy implements ChatStrategy {
-  toolFunctions = [migrateToolFunction];
+  toolFunctions = [
+    deleteBackendFileToolFunction,
+    editBackendFileToolFunction,
+    executeSqlToolFunction,
+    migrateToolFunction,
+    planBackendFileChangesToolFunction,
+    writeBackendFileToolFunction,
+  ];
 
   async init() {
-    // TODO: bun install and migrate
-    const templateDir = path.normalize(
-      path.resolve(process.cwd(), "backendStrategyTemplate")
-    );
-    if (!existsSync(PROJECT_DIR)) {
-      ensureDirSync(PROJECT_DIR);
+    ensureDirSync(PROJECT_DIR);
+
+    if (isDirectoryEmptySync(PROJECT_DIR)) {
+      const templateDir = path.normalize(
+        path.resolve(
+          process.cwd(),
+          "src",
+          "strategies",
+          "backendStrategy",
+          "projectTemplate"
+        )
+      );
+      logger.info("Copying template to project directory");
       copySync(templateDir, PROJECT_DIR);
     }
+
+    logger.info("Installing bun dependencies");
+    await exec(`cd ${PROJECT_DIR} && bun install`);
+
+    const migrationFiles = readdirSync(PROJECT_API_MIGRATIONS_DIR);
+    if (migrationFiles.length > 1) {
+      logger.info("Running database migrations");
+      await dbMigrate();
+    }
+
+    spawn("bun", ["start"], {
+      stdio: "pipe",
+      detached: true,
+      shell: false,
+      cwd: PROJECT_DIR,
+    });
   }
 
   toolFunctionMap() {
@@ -50,9 +96,6 @@ export class BackendStrategy implements ChatStrategy {
     messages: Message[],
     toolCallResponses: Message[]
   ): Promise<ChatAdapterChatParams> {
-    // this basic implementation just returns the vanilla system prompt, messages, and tools
-    // i.e. attempts nothing dynamic, a standard continuous chat
-
     let tools = this.getTools();
     if (this.callCount >= MAX_TOOL_CALL_ITERATIONS) {
       logger.info(`Maximum iterations reached: ${this.callCount}`);
@@ -62,7 +105,6 @@ export class BackendStrategy implements ChatStrategy {
         "\nYou've reached the maximum number of tool calls, do not call any more tools now. Do not apologise to the user, update them with progress and check if they wish to continue";
     }
 
-    // If the first message is not the system prompt then prepend it
     if (!messages[0] || messages[0].role !== "system") {
       const systemPromptMessage: Message = {
         role: "system",

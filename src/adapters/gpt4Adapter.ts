@@ -6,8 +6,12 @@ import type {
   ChatCompletionStreamParams,
 } from "openai/lib/ChatCompletionStream";
 import type { Readable } from "stream";
+
+import { isChatCancelled } from "../chatState";
+import { callToolFunction } from "../chatUtils";
+
 import { CHAT_HISTORY_FILE, logger, OPENAI_API_KEY } from "../constants";
-import type {
+import {
   ChatAdapter,
   ChatAdapterChatParams,
   ChatResponse,
@@ -16,12 +20,11 @@ import type {
   Message,
   ToolFunction,
 } from "../types/chat";
-import { callToolFunction } from "../chatUtils";
 
 export class Gpt4Adapter implements ChatAdapter {
   runMessages: Message[] = [];
 
-  llmModel() {
+  get llmModel() {
     return "gpt-4o";
   }
 
@@ -82,10 +85,24 @@ export class Gpt4Adapter implements ChatAdapter {
     return toolCallResponseMessages;
   }
 
+  handleCancellation(messages: Message[]): ChatResponse {
+    const cancellationMessage: Message = {
+      role: "assistant",
+      content: "Chat cancelled",
+    };
+    messages.push(cancellationMessage);
+    this.saveMessageToChatHistory(cancellationMessage);
+    return { messages, lastCompletion: cancellationMessage };
+  }
+
   async chat(
     { messages, tools }: ChatAdapterChatParams,
     stream: Readable
   ): Promise<ChatResponse> {
+    if (isChatCancelled()) {
+      return this.handleCancellation(messages);
+    }
+
     const openai = new OpenAI({
       apiKey: OPENAI_API_KEY,
       // HACK: This is a workaround for a bug in the Bun runtime:
@@ -98,9 +115,12 @@ export class Gpt4Adapter implements ChatAdapter {
 
     let openAiStream: ChatCompletionStream;
     let openAiChatParams: ChatCompletionStreamParams = {
-      model: this.llmModel(),
+      model: this.llmModel,
       messages: messages as OpenAI.Chat.Completions.ChatCompletionMessage[],
       stream: true,
+      stream_options: {
+        include_usage: true,
+      },
     };
 
     if (toolParams.length > 0) {
@@ -112,12 +132,16 @@ export class Gpt4Adapter implements ChatAdapter {
     const streamingToolCallNames: Record<string, string> = {};
 
     for await (const chunk of openAiStream) {
+      if (isChatCancelled()) {
+        return this.handleCancellation(messages);
+      }
+
       const transformedChunk = this.transformChunk(
         chunk,
         streamingToolCallNames
       );
-      const transformedChunkString = JSON.stringify(transformedChunk) + "\n";
       if (transformedChunk) {
+        const transformedChunkString = JSON.stringify(transformedChunk) + "\n";
         stream.push(transformedChunkString);
       }
     }
@@ -165,6 +189,10 @@ export class Gpt4Adapter implements ChatAdapter {
     chunk: any,
     streamingToolCallNames: Record<string, string>
   ): ChatStreamData | null {
+    if (chunk.choices.length === 0) {
+      return null;
+    }
+
     const choice = chunk.choices[0];
     const delta = choice.delta;
 

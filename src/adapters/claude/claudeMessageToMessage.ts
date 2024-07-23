@@ -51,7 +51,6 @@ function createAssistantMessages(claudeMessage: ClaudeMessage): Message {
   let textContent = "";
   let toolCalls: OpenAiToolCall[] = [];
 
-  // TODO: check assumptions that Claude will only return one text block
   for (const content of claudeMessage.content) {
     switch (content.type) {
       case "text":
