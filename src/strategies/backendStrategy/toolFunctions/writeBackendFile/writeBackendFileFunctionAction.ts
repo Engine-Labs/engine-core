@@ -116,7 +116,7 @@ export async function compileFastifyProjectApi(
   writeFileSync(path.join(tempDir, filepath), code);
 
   try {
-    await exec(`npx tsc --project ${tempDir}/tsconfig.json`);
+    await exec(`bun tsc --project ${tempDir}/tsconfig.json`);
   } catch (error) {
     rmSync(tempDir, { recursive: true, force: true });
     const execError = error as { stdout: string };
