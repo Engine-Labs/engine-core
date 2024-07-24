@@ -1,0 +1,12 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:/usr/src/app/project/prisma/dev.db"
+}
+
+model schema_migrations {
+  id String @id
+}

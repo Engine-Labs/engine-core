@@ -1,7 +1,11 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { RequestOptions } from "@anthropic-ai/sdk/core.mjs";
 import { MessageStreamParams } from "@anthropic-ai/sdk/resources/messages.mjs";
 import { appendFileSync } from "fs";
 import type { Readable } from "stream";
+
+import { isChatCancelled } from "../../chatState";
+import { callToolFunction } from "../../chatUtils";
 import { ANTHROPIC_API_KEY, CHAT_HISTORY_FILE, logger } from "../../constants";
 import type {
   ChatAdapter,
@@ -12,19 +16,39 @@ import type {
   Message,
   ToolFunction,
 } from "../../types/chat";
-import { callToolFunction } from "../../chatUtils";
 import { convertClaudeMessageToMessage } from "./claudeMessageToMessage";
 import { convertMessagesToClaudeMessages } from "./messageToClaudeMessage";
-
 export class ClaudeBaseAdapter implements ChatAdapter {
+  private _llmModel: string;
+  private _maxOutputTokens: number;
+  private _requestOptions: RequestOptions;
+
   runMessages: Message[] = [];
 
   currentMessageId: string = "";
   currentToolCallId: string = "";
   currentToolCallFunctionName: string = "";
 
-  llmModel() {
-    return "claude-3-5-sonnet-20240620";
+  constructor(
+    llmModel: string,
+    maxOutputTokens: number,
+    requestOptions?: RequestOptions
+  ) {
+    this._llmModel = llmModel;
+    this._maxOutputTokens = maxOutputTokens;
+    this._requestOptions = requestOptions || {};
+  }
+
+  get llmModel(): string {
+    return this._llmModel;
+  }
+
+  get maxOutputTokens(): number {
+    return this._maxOutputTokens;
+  }
+
+  get requestOptions(): RequestOptions {
+    return this._requestOptions;
   }
 
   isToolCall(message: Message): boolean {
@@ -43,6 +67,7 @@ export class ClaudeBaseAdapter implements ChatAdapter {
 
     for (const toolCall of message.tool_calls) {
       const toolName = toolCall.function.name;
+      logger.debug(`Responding to tool call: ${toolName}`);
 
       let toolFunctionParams: any;
       try {
@@ -76,13 +101,31 @@ export class ClaudeBaseAdapter implements ChatAdapter {
       this.saveMessageToChatHistory(message);
     }
 
+    logger.debug(
+      `Tool call responses: ${JSON.stringify(toolCallResponseMessages)}`
+    );
+
     return toolCallResponseMessages;
+  }
+
+  handleCancellation(messages: Message[]): ChatResponse {
+    const cancellationMessage: Message = {
+      role: "assistant",
+      content: "Chat cancelled",
+    };
+    messages.push(cancellationMessage);
+    this.saveMessageToChatHistory(cancellationMessage);
+    return { messages, lastCompletion: cancellationMessage };
   }
 
   async chat(
     { messages, tools }: ChatAdapterChatParams,
     stream: Readable
   ): Promise<ChatResponse> {
+    if (isChatCancelled()) {
+      return this.handleCancellation(messages);
+    }
+
     const anthropic = new Anthropic({
       apiKey: ANTHROPIC_API_KEY,
     });
@@ -99,8 +142,8 @@ export class ClaudeBaseAdapter implements ChatAdapter {
     const claudeMessages = convertMessagesToClaudeMessages(messages);
 
     let claudeChatParams: MessageStreamParams = {
-      max_tokens: 1024,
-      model: this.llmModel(),
+      max_tokens: this.maxOutputTokens,
+      model: this.llmModel,
       messages: claudeMessages,
       stream: true,
     };
@@ -113,10 +156,19 @@ export class ClaudeBaseAdapter implements ChatAdapter {
       claudeChatParams.system = systemPrompt;
     }
 
-    const claudeStream = anthropic.messages.stream(claudeChatParams);
+    const requestOptions: RequestOptions = this.requestOptions;
+
+    const claudeStream = anthropic.messages.stream(
+      claudeChatParams,
+      requestOptions
+    );
     const streamingToolCallNames: Record<string, string> = {};
 
     for await (const chunk of claudeStream) {
+      if (isChatCancelled()) {
+        claudeStream.abort();
+        return this.handleCancellation(messages);
+      }
       const transformedChunk = this.transformChunk(
         chunk,
         streamingToolCallNames
@@ -165,6 +217,7 @@ export class ClaudeBaseAdapter implements ChatAdapter {
         },
       });
     }
+    logger.debug(`Tool params: ${JSON.stringify(toolParams)}`);
     return toolParams;
   }
 

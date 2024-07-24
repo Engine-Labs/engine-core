@@ -65,7 +65,9 @@ export interface ToolFunctionResponse {
 
 export interface ChatAdapter {
   runMessages: Message[];
-  llmModel(): string;
+  llmModel: string;
+  maxOutputTokens?: number;
+  requestOptions?: {};
   isToolCall(message: Message): boolean;
   toolCallResponseMessages(
     message: Message,
@@ -77,6 +79,7 @@ export interface ChatAdapter {
     chatStrategy: ChatStrategy
   ): Promise<ChatResponse>;
   saveMessageToChatHistory(message: Message): void;
+  handleCancellation(messages: Message[]): ChatResponse;
 }
 
 export type ChatAdapterChatParams = {

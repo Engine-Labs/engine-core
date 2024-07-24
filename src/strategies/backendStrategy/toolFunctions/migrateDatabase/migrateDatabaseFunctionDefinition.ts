@@ -1,15 +1,12 @@
 import { ToolFunction } from "../../../../types/chat";
-import { createMigration } from "./migrateDatabaseFuntion";
+import { createMigration } from "./migrateDatabaseFunction";
 
 const name = "migrateDatabase";
 
-// Description for the llm
 const description =
-  "Use this function to modify the SQLite database schema by executing SQLite SQL statements in a database migration.";
+  "Use this tool to modify the SQLite database schema by executing SQLite SQL statements in a database migration.";
 
-// JSON schema parameters for the this function
 const parameters = {
-  title: "CreateMigrationBodySchema",
   type: "object",
   properties: {
     upMigrations: {
@@ -44,10 +41,6 @@ const parameters = {
   required: ["upMigrations", "downMigrations"],
 };
 
-// The function that will be called when this tool is invoked
-// Accepts the parameters define here in JSON schema
-// MUST return a string which clearly describes the result of the function
-// whether it was successful or not
 async function run(params: any): Promise<string> {
   await createMigration(
     params.upMigrations.sqlStatements,

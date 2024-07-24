@@ -1,13 +1,13 @@
 import Ajv from "ajv";
 import { existsSync, readFileSync } from "fs";
-import { CHAT_HISTORY_FILE } from "./constants";
+import { readdirSync } from "fs-extra";
+import { setLastToolCall } from "./chatState";
+import { CHAT_HISTORY_FILE, logger } from "./constants";
 import type {
   HistoryMessage,
   ToolFunction,
   ToolFunctionResponse,
 } from "./types/chat";
-import { setLastToolCall } from "./chatState";
-const logger = require("pino")();
 
 const ajv = new Ajv();
 
@@ -27,7 +27,6 @@ export async function callToolFunction(
     };
   }
 
-  // TODO: maybe move compilation to the tool definition
   const validate = ajv.compile(await tool.getParameters());
   const valid = validate(toolFunctionParams);
   if (!valid) {
@@ -39,7 +38,7 @@ export async function callToolFunction(
     };
   }
 
-  logger.debug(
+  logger.info(
     `Calling tool function ${toolFunctionName} with params: ${JSON.stringify(
       toolFunctionParams
     )}`
@@ -47,8 +46,6 @@ export async function callToolFunction(
 
   let responseText: string;
   try {
-    // TODO: eventually all tools should return ToolFunctionResponse from run() and
-    //       MUST NOT THROW ANY ERRORS
     responseText = await tool.run(toolFunctionParams);
     setLastToolCall(toolFunctionName, true);
   } catch (error) {
@@ -59,7 +56,7 @@ export async function callToolFunction(
       return { responseText: JSON.stringify(error), isError: true };
     }
   }
-  logger.debug(`Tool function ${toolFunctionName} response: ${responseText}`);
+  logger.info(`Tool function ${toolFunctionName} response: ${responseText}`);
   return { responseText, isError: false };
 }
 
@@ -121,4 +118,14 @@ export function augmentErrorMessage(
 // taken from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions
 function escapeRegExp(toEscape: string) {
   return toEscape.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); // $& means the whole matched string
+}
+
+export function isDirectoryEmptySync(directoryPath: string) {
+  try {
+    const files = readdirSync(directoryPath);
+    return files.length === 0;
+  } catch (err) {
+    console.error("Error reading directory:", err);
+    return false;
+  }
 }

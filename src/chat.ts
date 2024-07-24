@@ -14,11 +14,11 @@ export async function chat({
   chatStrategy: chatStrategy,
   stream: stream,
 }: ChatParams): Promise<void> {
-  // Save the incoming user message to the chat history
   chatAdapter.saveMessageToChatHistory(userMessage);
   const completeChatHistory = getCompleteChatHistory();
   const chatHistory: Message[] =
     chatStrategy.getChatHistory(completeChatHistory);
+
   let chatParams: ChatAdapterChatParams = await chatStrategy.call(
     chatHistory,
     []
@@ -36,7 +36,6 @@ export async function chat({
       chatResponse.lastCompletion &&
       chatAdapter.isToolCall(chatResponse.lastCompletion)
     ) {
-      // allow tool call messages to be processed when the chat is cancelled
       const toolCallResponseMessages: Message[] =
         await chatAdapter.toolCallResponseMessages(
           chatResponse.lastCompletion,
