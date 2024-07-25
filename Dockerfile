@@ -17,4 +17,4 @@ RUN chmod +x /usr/local/bin/geni
 
 EXPOSE 8080
 
-ENTRYPOINT ["bin/entrypoint.sh"]
+ENTRYPOINT ["entrypoint.sh"]

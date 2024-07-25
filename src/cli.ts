@@ -39,10 +39,26 @@ async function main() {
     ],
   });
 
+  if (chatApapterKey === "gpt4" && !process.env.OPENAI_API_KEY) {
+    process.stdout.write(
+      "\nERROR: Please set OPENAI_API_KEY in your .env file to continue\n"
+    );
+    await new Promise((r) => setTimeout(r, 2000));
+    process.exit(0);
+  }
+
+  if (chatApapterKey === "claudeSonnet" && !process.env.ANTHROPIC_API_KEY) {
+    process.stdout.write(
+      "\nERROR: Please set ANTHROPIC_API_KEY in your .env file to continue\n"
+    );
+    await new Promise((r) => setTimeout(r, 2000));
+    process.exit(0);
+  }
+
   const ChatStrategy = chatStrategies[chatStrategyKey];
   await new ChatStrategy().init();
 
-  const chatLoop = async () => {
+  async function chatLoop() {
     process.stdout.write("\n\n");
     const stream = new Readable({
       read(_size) {},
@@ -90,7 +106,7 @@ async function main() {
 
     await cliChat(chatStrategyKey, chatApapterKey, userMessage, stream);
     await chatLoop();
-  };
+  }
 
   await chatLoop();
 }

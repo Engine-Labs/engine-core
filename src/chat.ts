@@ -1,5 +1,4 @@
 import { endChatState, setChatInProgress } from "./chatState";
-import { resetChatStatus } from "./chatStatus";
 import { getCompleteChatHistory } from "./chatUtils";
 import type {
   ChatAdapterChatParams,
@@ -54,6 +53,5 @@ export async function chat({
     throw error;
   } finally {
     endChatState();
-    resetChatStatus();
   }
 }

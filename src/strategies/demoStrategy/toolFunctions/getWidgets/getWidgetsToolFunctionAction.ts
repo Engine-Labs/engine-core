@@ -11,7 +11,7 @@ export function getWidgets(colour: string): string[] {
     case "green":
       return ["Slimey widget", "Fresh meadow widget", "Granny smith widget"];
     case "purple":
-      return ["Price rain widget", "Hendrix haze widget"];
+      return ["Prince rain widget", "Hendrix haze widget"];
     default:
       return [];
   }
