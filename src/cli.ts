@@ -123,7 +123,10 @@ async function main() {
     ],
   });
 
-  if (chatAdapterKey === "gpt4" && !OPENAI_API_KEY) {
+  if (
+    (chatAdapterKey === "gpt4o" || chatAdapterKey === "gpt4oMini") &&
+    !OPENAI_API_KEY
+  ) {
     process.stdout.write(
       "\nERROR: Please set OPENAI_API_KEY in your .env file to continue\n"
     );
