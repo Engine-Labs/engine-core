@@ -45,6 +45,7 @@ async function chatLoop(chatStrategyKey: string, chatAdapterKey: string) {
   ]);
 
   if (message === "exit" || message === "quit") {
+    process.stdout.write("Exiting...\n");
     process.exit(0);
   }
 
