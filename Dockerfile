@@ -4,6 +4,7 @@ WORKDIR /usr/src/app
 
 RUN apt-get update && apt-get install -y \
   sqlite3 \
+  tree \
   && apt-get clean && \
   rm -rf /var/lib/apt/lists/*
 
@@ -17,4 +18,4 @@ RUN chmod +x /usr/local/bin/geni
 
 EXPOSE 8080
 
-ENTRYPOINT ["entrypoint.sh"]
+CMD ["bun", "run", "start"]

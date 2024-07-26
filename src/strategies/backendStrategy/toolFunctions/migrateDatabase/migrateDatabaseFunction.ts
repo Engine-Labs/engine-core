@@ -2,7 +2,11 @@ import { ExecException, exec as originalExec } from "child_process";
 import { rmSync, writeFileSync } from "fs";
 import { ensureDirSync } from "fs-extra";
 import { promisify } from "util";
-import { logger, PROJECT_API_MIGRATIONS_DIR } from "../../../../constants";
+import {
+  logger,
+  PROJECT_API_MIGRATIONS_DIR,
+  PROJECT_DIR,
+} from "../../../../constants";
 
 const exec = promisify(originalExec);
 
@@ -44,6 +48,9 @@ export async function createMigration(
 
   try {
     await dbMigrate();
+    await exec(
+      `cd ${PROJECT_DIR} && bun prisma db pull && bun prisma generate`
+    );
   } catch (error) {
     logger.error(error);
     const execError = error as ExecException;

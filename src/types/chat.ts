@@ -115,3 +115,9 @@ export type ChatState = {
 
 export type ChatAdapterConstructor = new (...args: any[]) => ChatAdapter;
 export type ChatStrategyConstructor = new (...args: any[]) => ChatStrategy;
+
+export type BackendStrategySystemPromptVars = {
+  apiFileTree: string;
+  openApiDocument: string;
+  databaseSchema: string;
+};
