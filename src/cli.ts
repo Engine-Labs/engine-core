@@ -36,21 +36,22 @@ async function chatLoop(chatStrategyKey: string, chatAdapterKey: string) {
     read(_size) {},
   });
 
-  const { message } = await inquirer.prompt([
-    {
-      type: "input",
-      name: "message",
-      message: "Chat:",
-    },
-  ]);
+  let message;
+  while (!message) {
+    const response = await inquirer.prompt([
+      {
+        type: "input",
+        name: "message",
+        message: "Chat:",
+      },
+    ]);
 
-  if (message === "exit" || message === "quit") {
-    process.stdout.write("Exiting...\n");
-    process.exit(0);
-  }
+    if (response.message === "exit" || response.message === "quit") {
+      process.stdout.write("Exiting...\n");
+      process.exit(0);
+    }
 
-  if (!message) {
-    await chatLoop(chatStrategyKey, chatAdapterKey);
+    message = response.message;
   }
 
   const userMessage = {
@@ -77,7 +78,6 @@ async function chatLoop(chatStrategyKey: string, chatAdapterKey: string) {
   });
 
   await cliChat(chatStrategyKey, chatAdapterKey, userMessage, stream);
-  await chatLoop(chatStrategyKey, chatAdapterKey);
 }
 
 async function main() {
@@ -142,7 +142,9 @@ async function main() {
     }
   });
 
-  await chatLoop(chatStrategyKey, chatAdapterKey);
+  while (true) {
+    await chatLoop(chatStrategyKey, chatAdapterKey);
+  }
 }
 
 main().catch((error) => {
