@@ -20,7 +20,7 @@
     "rootDir": "./src"
   },
   "exclude": [
-    "src/strategies/backendStrategy/Template",
+    "src/strategies/backendStrategy/projectTemplate",
     "node_modules",
     "dist",
     "tests",
