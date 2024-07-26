@@ -28,8 +28,24 @@ import { planBackendFileChangesToolFunction } from "./toolFunctions/planBackendF
 import { writeBackendFileToolFunction } from "./toolFunctions/writeBackendFile/writeBackendFileFunctionDefinition";
 
 const fetchWithRetry = fetchRetry(fetch);
-
 const exec = promisify(originalExec);
+
+async function waitForApiToStart(): Promise<void> {
+  console.info("Waiting for API to start");
+  try {
+    const response = await fetchWithRetry("http://0.0.0.0:8080/docs/json", {
+      retries: 3,
+      retryDelay: 1000,
+    });
+    if (response.ok) {
+      console.info("API started at http://0.0.0.0:8080");
+    } else {
+      console.info("Unable to check if API has started at http://0.0.0.0:8080");
+    }
+  } catch (error) {
+    console.info("Unable to check if API has started at http://0.0.0.0:8080");
+  }
+}
 
 export class BackendStrategy implements ChatStrategy {
   toolFunctions = [
@@ -54,16 +70,16 @@ export class BackendStrategy implements ChatStrategy {
           "projectTemplate"
         )
       );
-      logger.info("Copying template to project directory");
+      console.info("Copying template to project directory");
       copySync(templateDir, PROJECT_DIR);
     }
 
-    logger.info("Installing bun dependencies");
+    console.info("Installing bun dependencies");
     await exec(`cd ${PROJECT_DIR} && bun install`);
 
     const migrationFiles = readdirSync(PROJECT_API_MIGRATIONS_DIR);
     if (migrationFiles.length > 1) {
-      logger.info("Running database migrations");
+      console.info("Running database migrations");
       await dbMigrate();
     }
 
@@ -75,6 +91,8 @@ export class BackendStrategy implements ChatStrategy {
       shell: false,
       cwd: PROJECT_DIR,
     });
+
+    await waitForApiToStart();
   }
 
   toolFunctionMap() {
