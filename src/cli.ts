@@ -52,23 +52,22 @@ async function chatLoop(chatStrategyKey: string, chatApapterKey: string) {
     content: message,
   };
 
-  // let prevStreamData = { type: "" };
+  let prevStreamData = { type: "" };
   stream.on("data", (chunk) => {
     const streamData = JSON.parse(chunk.toString());
 
-    // if (
-    //   prevStreamData &&
-    //   prevStreamData.type === "tool" &&
-    //   streamData.type === "chat"
-    // ) {
-    //   process.stdout.write("\n\n");
-    // }
+    if (
+      prevStreamData &&
+      prevStreamData.type === "chat" &&
+      streamData.type === "tool"
+    ) {
+      process.stdout.write("\n\n");
+    }
 
     if (streamData.type === "chat") {
       process.stdout.write(streamData.chat.content);
     }
-
-    // prevStreamData = streamData;
+    prevStreamData = streamData;
   });
 
   await cliChat(chatStrategyKey, chatApapterKey, userMessage, stream);

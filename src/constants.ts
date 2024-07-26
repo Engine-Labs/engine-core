@@ -13,7 +13,7 @@ const customTransport = pino.transport({
       target: "pino-pretty",
       options: {
         colorize: true,
-        messageFormat: "\n\n\n>>> {msg}",
+        messageFormat: "\n>>> {msg}\n",
         ignore: "pid,hostname,time,level",
       },
     },
