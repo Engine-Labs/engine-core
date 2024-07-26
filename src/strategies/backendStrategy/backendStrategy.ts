@@ -64,9 +64,7 @@ export class BackendStrategy implements ChatStrategy {
       await dbMigrate();
     }
 
-    await exec(
-      `cd ${PROJECT_DIR} && bun prisma db pull && bun prisma generate`
-    );
+    await exec(`cd ${PROJECT_DIR} && bun prisma generate`);
 
     spawn("bun", ["start"], {
       stdio: "pipe",

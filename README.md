@@ -15,3 +15,4 @@ Additionally, we have extracted the LLM integrations (e.g., Anthropic or OpenAI)
 1. Ensure Docker is installed and running
 2. Copy `.env.example` to `.env` and add at least one of `OPENAI_API_KEY` or `ANTHROPIC_API_KEY`
 3. Run `bin/cli`
+4. Type `help` to see what you can do
