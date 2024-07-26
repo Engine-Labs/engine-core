@@ -1,4 +1,5 @@
 import { exec as originalExec, spawn } from "child_process";
+import fetchRetry from "fetch-retry";
 import { copySync, ensureDirSync, readdirSync } from "fs-extra";
 import Handlebars from "handlebars";
 import path from "path";
@@ -25,6 +26,8 @@ import { dbMigrate } from "./toolFunctions/migrateDatabase/migrateDatabaseFuncti
 import { migrateToolFunction } from "./toolFunctions/migrateDatabase/migrateDatabaseFunctionDefinition";
 import { planBackendFileChangesToolFunction } from "./toolFunctions/planBackendFileChanges/planBackendFileChangesFunctionDefinition";
 import { writeBackendFileToolFunction } from "./toolFunctions/writeBackendFile/writeBackendFileFunctionDefinition";
+
+const fetchWithRetry = fetchRetry(fetch);
 
 const exec = promisify(originalExec);
 
@@ -239,8 +242,11 @@ Always strive for accuracy, clarity, and efficiency in your responses and action
   }
 
   async getOpenApiDocument(): Promise<string> {
-    const openApiUrl = `http://0.0.0.0:8080/api/docs/yaml`;
-    const response = await fetch(openApiUrl);
+    const openApiUrl = "http://0.0.0.0:8080/api/docs/yaml";
+    const response = await fetchWithRetry(openApiUrl, {
+      retries: 3,
+      retryDelay: 1000,
+    });
     return response.text();
   }
 

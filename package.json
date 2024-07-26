@@ -6,25 +6,26 @@
   "license": "Apache-2.0",
   "type": "module",
   "scripts": {
-    "start": "bun src/cli.ts"
+    "start": "bun src/cli.ts",
+    "check": "bunx tsc --noEmit"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.24.3",
     "ajv": "^8.17.1",
     "blessed": "^0.1.81",
     "dotenv": "^16.4.5",
+    "fetch-retry": "^6.0.0",
     "fs-extra": "^11.2.0",
     "handlebars": "^4.7.8",
     "inquirer": "^10.0.1",
     "openai": "^4.52.7",
-    "pino-pretty": "^11.2.1",
     "pino": "^9.3.1",
+    "pino-pretty": "^11.2.1",
     "sqlite3": "^5.1.7",
     "typescript": "^5.0.0"
   },
   "devDependencies": {
-    "@anthropic-ai/sdk": "^0.24.3",
     "@types/blessed": "^0.1.25",
-    "@types/bun": "latest",
     "@types/fs-extra": "^11.0.4",
     "@types/sqlite3": "^3.1.11"
   }

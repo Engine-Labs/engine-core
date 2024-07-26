@@ -83,7 +83,7 @@ export function augmentErrorMessage(
 ) {
   const filename = filepath.split("/").slice(-1)[0];
 
-  // matches strings like
+  // matches strings like below, capturing line number, column number, and error message
   // "../../../tmp/enginebkKS7N/src/endpoints/example.ts(33,37): error TS2339: ..."
   const re = new RegExp(`${escapeRegExp(filename)}\\((\\d+),\\d+\\):(.*)`, "g");
   let matches = re.exec(errorMessage);

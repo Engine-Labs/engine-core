@@ -1,9 +1,14 @@
+import { select } from "@inquirer/prompts";
 import "dotenv/config";
 import inquirer from "inquirer";
-import { select } from "@inquirer/prompts";
 import { Readable } from "stream";
 import { chat } from "./chat";
-import { chatAdapters, chatStrategies } from "./constants";
+import {
+  ANTHROPIC_API_KEY,
+  chatAdapters,
+  chatStrategies,
+  OPENAI_API_KEY,
+} from "./constants";
 import type { ChatParams, Message } from "./types/chat";
 
 async function cliChat(
@@ -25,7 +30,7 @@ async function cliChat(
   return await chat(params);
 }
 
-async function chatLoop(chatStrategyKey: string, chatApapterKey: string) {
+async function chatLoop(chatStrategyKey: string, chatAdapterKey: string) {
   process.stdout.write("\n\n");
   const stream = new Readable({
     read(_size) {},
@@ -44,7 +49,7 @@ async function chatLoop(chatStrategyKey: string, chatApapterKey: string) {
   }
 
   if (!message) {
-    await chatLoop(chatStrategyKey, chatApapterKey);
+    await chatLoop(chatStrategyKey, chatAdapterKey);
   }
 
   const userMessage = {
@@ -70,8 +75,8 @@ async function chatLoop(chatStrategyKey: string, chatApapterKey: string) {
     prevStreamData = streamData;
   });
 
-  await cliChat(chatStrategyKey, chatApapterKey, userMessage, stream);
-  await chatLoop(chatStrategyKey, chatApapterKey);
+  await cliChat(chatStrategyKey, chatAdapterKey, userMessage, stream);
+  await chatLoop(chatStrategyKey, chatAdapterKey);
 }
 
 async function main() {
@@ -91,7 +96,7 @@ async function main() {
     ],
   });
 
-  const chatApapterKey = await select({
+  const chatAdapterKey = await select({
     message: "Select a chat adapter",
     choices: [
       {
@@ -107,26 +112,36 @@ async function main() {
     ],
   });
 
-  if (chatApapterKey === "gpt4" && !process.env.OPENAI_API_KEY) {
+  if (chatAdapterKey === "gpt4" && !OPENAI_API_KEY) {
     process.stdout.write(
       "\nERROR: Please set OPENAI_API_KEY in your .env file to continue\n"
     );
-    await new Promise((r) => setTimeout(r, 2000));
-    process.exit(0);
+    process.exit(1);
   }
 
-  if (chatApapterKey === "claudeSonnet" && !process.env.ANTHROPIC_API_KEY) {
+  if (chatAdapterKey === "claudeSonnet" && !ANTHROPIC_API_KEY) {
     process.stdout.write(
       "\nERROR: Please set ANTHROPIC_API_KEY in your .env file to continue\n"
     );
-    await new Promise((r) => setTimeout(r, 2000));
-    process.exit(0);
+    process.exit(1);
   }
 
   const ChatStrategy = chatStrategies[chatStrategyKey];
   await new ChatStrategy().init();
 
-  await chatLoop(chatStrategyKey, chatApapterKey);
+  process.stdin.on("data", (key) => {
+    const keyString = key.toString();
+    if (
+      keyString === "\u0003" || // Ctrl + C
+      keyString === "\u001b" || // ESC
+      keyString === "\u0004" // Ctrl + D
+    ) {
+      process.stdout.write("Exiting...\n");
+      process.exit(0);
+    }
+  });
+
+  await chatLoop(chatStrategyKey, chatAdapterKey);
 }
 
 main().catch((error) => {
