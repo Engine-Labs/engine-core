@@ -106,6 +106,11 @@ async function main() {
         description: "Claude Sonnet chat adapter",
       },
       {
+        name: "Claude Opus",
+        value: "claudeOpus",
+        description: "Claude Opus chat adapter",
+      },
+      {
         name: "GPT-4",
         value: "gpt4",
         description: "GPT-4 chat adapter",
@@ -120,15 +125,18 @@ async function main() {
     process.exit(1);
   }
 
-  if (chatAdapterKey === "claudeSonnet" && !ANTHROPIC_API_KEY) {
+  if (
+    (chatAdapterKey === "claudeSonnet" || chatAdapterKey === "claudeOpus") &&
+    !ANTHROPIC_API_KEY
+  ) {
     process.stdout.write(
       "\nERROR: Please set ANTHROPIC_API_KEY in your .env file to continue\n"
     );
     process.exit(1);
   }
 
-  const ChatStrategy = chatStrategies[chatStrategyKey];
-  await new ChatStrategy().init();
+  const ChatStrategy = new chatStrategies[chatStrategyKey]();
+  await ChatStrategy.init();
 
   process.stdin.on("data", (key) => {
     const keyString = key.toString();
