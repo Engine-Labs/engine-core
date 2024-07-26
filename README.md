@@ -6,7 +6,7 @@ Chat strategies offer a means to dynamically alter the chat history, system prom
 
 This project includes a simple illustrative example called `demoStrategy`, which serves as a starting point for creating new strategies.
 
-There is also `backendStrategy`, a slightly more comprehensive example that interacts with a local directory, where the LLM works on a running Fastify app, creating database migrations and API endpoints.
+There is also `backendStrategy`, a slightly more comprehensive example where the LLM works on a local Fastify app (running on http://localhost:8080) to create database migrations and API endpoints.
 
 Additionally, we have extracted the LLM integrations (e.g., Anthropic or OpenAI) into adapters, which allow you to run the same app code and strategies while switching foundation models.
 
