@@ -111,9 +111,14 @@ async function main() {
         description: "Claude Opus chat adapter",
       },
       {
-        name: "GPT-4",
-        value: "gpt4",
-        description: "GPT-4 chat adapter",
+        name: "GPT-4o",
+        value: "gpt4o",
+        description: "GPT-4o chat adapter",
+      },
+      {
+        name: "GPT-4o-mini",
+        value: "gpt4oMini",
+        description: "GPT-4o-mini chat adapter",
       },
     ],
   });

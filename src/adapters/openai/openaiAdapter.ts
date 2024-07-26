@@ -7,10 +7,10 @@ import type {
 } from "openai/lib/ChatCompletionStream";
 import type { Readable } from "stream";
 
-import { isChatCancelled } from "../chatState";
-import { callToolFunction } from "../chatUtils";
+import { isChatCancelled } from "../../chatState";
+import { callToolFunction } from "../../chatUtils";
 
-import { CHAT_HISTORY_FILE, logger, OPENAI_API_KEY } from "../constants";
+import { CHAT_HISTORY_FILE, logger, OPENAI_API_KEY } from "../../constants";
 import {
   ChatAdapter,
   ChatAdapterChatParams,
@@ -19,13 +19,18 @@ import {
   HistoryMessage,
   Message,
   ToolFunction,
-} from "../types/chat";
+} from "../../types/chat";
 
-export class Gpt4Adapter implements ChatAdapter {
+export class OpenAIBaseAdapter implements ChatAdapter {
+  private _llmModel: string;
   runMessages: Message[] = [];
 
-  get llmModel() {
-    return "gpt-4o";
+  constructor(llmModel: string) {
+    this._llmModel = llmModel;
+  }
+
+  get llmModel(): string {
+    return this._llmModel;
   }
 
   isToolCall(message: Message): boolean {

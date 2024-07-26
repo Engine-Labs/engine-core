@@ -18,6 +18,7 @@ import type {
 } from "../../types/chat";
 import { convertClaudeMessageToMessage } from "./claudeMessageToMessage";
 import { convertMessagesToClaudeMessages } from "./messageToClaudeMessage";
+
 export class ClaudeBaseAdapter implements ChatAdapter {
   private _llmModel: string;
   private _maxOutputTokens: number;

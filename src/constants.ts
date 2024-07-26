@@ -2,7 +2,8 @@ import path from "path";
 import pino from "pino";
 import { ClaudeOpusAdapter } from "./adapters/claudeOpusAdapter";
 import { ClaudeSonnetAdapter } from "./adapters/claudeSonnetAdapter";
-import { Gpt4Adapter } from "./adapters/gpt4Adapter";
+import { Gpt4oAdapter } from "./adapters/gpt4oAdapter";
+import { Gpt4oMiniAdapter } from "./adapters/gpt4oMiniAdapter";
 import { BackendStrategy } from "./strategies/backendStrategy/backendStrategy";
 import { DemoStrategy } from "./strategies/demoStrategy/demoStrategy";
 import { ChatAdapterConstructor, ChatStrategyConstructor } from "./types/chat";
@@ -48,5 +49,6 @@ export const chatStrategies: Record<string, ChatStrategyConstructor> = {
 export const chatAdapters: Record<string, ChatAdapterConstructor> = {
   claudeOpus: ClaudeOpusAdapter,
   claudeSonnet: ClaudeSonnetAdapter,
-  gpt4: Gpt4Adapter,
+  gpt4o: Gpt4oAdapter,
+  gpt4oMini: Gpt4oMiniAdapter,
 };
