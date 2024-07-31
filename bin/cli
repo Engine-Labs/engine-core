@@ -6,16 +6,47 @@ CONTAINER_NAME="engine-core"
 cd "$(dirname "$0")"
 cd ../
 
+show_menu() {
+  echo "Please select a chat strategy:"
+  select option in "Backend - Build a backend API with SQLite and Fastify" "Shell - Build anything with a LLM powered shell" "Demo - Example strategy with a single tool function" "Quit"; do
+    case $REPLY in
+    1)
+      chat_strategy="backendStrategy"
+      break
+      ;;
+    2)
+      chat_strategy="shellStrategy"
+      break
+      ;;
+    3)
+      chat_strategy="demoStrategy"
+      break
+      ;;
+    4)
+      echo "Exiting..."
+      exit 0
+      ;;
+    *)
+      echo "Invalid option. Please try again."
+      ;;
+    esac
+  done
+}
+
+show_menu
+
+DOCKER_FILE_PATH=./src/strategies/$chat_strategy/Dockerfile
+
 docker rmi engine-core >/dev/null 2>&1
 
 if ! docker images | grep -q "$IMAGE_NAME"; then
-  echo "Building $IMAGE_NAME image..."
+  echo "Building $chat_strategy image..."
 
-  docker build -t "$IMAGE_NAME" . >/dev/null 2>&1
+  docker build --file $DOCKER_FILE_PATH -t "$IMAGE_NAME" . >/dev/null 2>&1
 fi
 
 echo "Starting $CONTAINER_NAME container..."
 
 docker rm "$CONTAINER_NAME" >/dev/null 2>&1
 
-docker run --rm -it --name "$CONTAINER_NAME" -p 8080:8080 -v ./project:/usr/src/app/project "$IMAGE_NAME"
+docker run --rm -it --name "$CONTAINER_NAME" -p 8080:8080 -e CHAT_STRATEGY=$chat_strategy -v ./project:/usr/src/app/project "$IMAGE_NAME"

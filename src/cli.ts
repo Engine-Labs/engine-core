@@ -81,22 +81,6 @@ async function chatLoop(chatStrategyKey: string, chatAdapterKey: string) {
 }
 
 async function main() {
-  const chatStrategyKey = await select({
-    message: "Select a chat strategy",
-    choices: [
-      {
-        name: "Backend Strategy",
-        value: "backendStrategy",
-        description: "Build a backend API with SQLite and Fastify",
-      },
-      {
-        name: "Demo Strategy",
-        value: "demoStrategy",
-        description: "Example strategy with a single tool function",
-      },
-    ],
-  });
-
   const chatAdapterKey = await select({
     message: "Select a chat adapter",
     choices: [
@@ -142,6 +126,8 @@ async function main() {
     );
     process.exit(1);
   }
+
+  const chatStrategyKey = process.env.CHAT_STRATEGY || "backendStrategy";
 
   const ChatStrategy = new chatStrategies[chatStrategyKey]();
   await ChatStrategy.init();

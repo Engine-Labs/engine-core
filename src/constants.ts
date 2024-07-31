@@ -7,6 +7,7 @@ import { Gpt4oMiniAdapter } from "./adapters/gpt4oMiniAdapter";
 import { BackendStrategy } from "./strategies/backendStrategy/backendStrategy";
 import { DemoStrategy } from "./strategies/demoStrategy/demoStrategy";
 import { ChatAdapterConstructor, ChatStrategyConstructor } from "./types/chat";
+import { ShellStrategy } from "./strategies/shellStrategy/shellStrategy";
 
 const customTransport = pino.transport({
   targets: [
@@ -44,6 +45,7 @@ export const SQLITE_DB_PATH = path.join(PROJECT_DIR, "prisma", "dev.db");
 export const chatStrategies: Record<string, ChatStrategyConstructor> = {
   demoStrategy: DemoStrategy,
   backendStrategy: BackendStrategy,
+  shellStrategy: ShellStrategy,
 };
 
 export const chatAdapters: Record<string, ChatAdapterConstructor> = {
