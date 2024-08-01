@@ -1,8 +1,8 @@
-![enginelabs](https://github.com/user-attachments/assets/ed537409-ab60-4473-9a5b-a8511f3b6d2b)
+[![enginelabs](https://github.com/user-attachments/assets/ed537409-ab60-4473-9a5b-a8511f3b6d2b)](https://enginelabs.ai)
 
-Engine Core demonstrates a pattern for enabling LLMs to undertake tasks of a given scope with a dynamic system prompt and a curated collection of tool functions. We call these chat strategies.
+Engine Core demonstrates a pattern for enabling LLMs to undertake tasks of a given scope with a dynamic system prompt and a collection of tool functions. We call these chat strategies.
 
-Chat strategies offer a means to dynamically alter the chat history, system prompts, and available tools on every run to create opportunities for smarter approaches.
+Chat strategies offer a means to dynamically alter the chat history, system prompts, and available tools on every run.
 
 This project includes 3 example strategies:
 
