@@ -10,7 +10,7 @@
     "check": "bunx tsc --noEmit"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.24.3",
+    "@anthropic-ai/sdk": "^0.25.0",
     "ajv": "^8.17.1",
     "blessed": "^0.1.81",
     "dotenv": "^16.4.5",
