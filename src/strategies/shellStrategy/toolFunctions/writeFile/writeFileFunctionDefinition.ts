@@ -18,7 +18,7 @@ const parameters = {
       description: "The content you want to write to the file",
     },
   },
-  required: ["filepath"],
+  required: ["filepath", "content"],
 };
 
 async function run(params: any): Promise<string> {
