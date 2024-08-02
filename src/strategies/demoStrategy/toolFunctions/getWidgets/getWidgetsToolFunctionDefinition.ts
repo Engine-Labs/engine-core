@@ -22,13 +22,13 @@ const parameters = {
 // It accepts the parameters define here in JSON schema
 // It MUST return a string which clearly describes the result of the function whether it was successful or not
 async function run(params: any): Promise<string> {
-  const fruits: string[] = getWidgets(params.colour);
+  const widgets: string[] = getWidgets(params.colour);
 
-  if (fruits.length === 0) {
-    return `No ${params.colour} fruits found`;
+  if (widgets.length === 0) {
+    return `No ${params.colour} widgets found`;
   }
 
-  return `${params.colour} fruits: ${fruits.join(", ")}`;
+  return `${params.colour} widgets: ${widgets.join(", ")}`;
 }
 
 export const getWidgetsToolFunction: ToolFunction = {
