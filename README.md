@@ -11,7 +11,7 @@ Chat strategies offer a means to dynamically alter context, system prompts, and 
 
 This project includes 3 example strategies:
 
-1.  `demoStrategy` - a simple illustrative example called which serves as a starting point for creating new strategies
+1.  `demoStrategy` - a simple illustrative example which serves as a starting point for creating new strategies
 2.  `backendStrategy` - a slightly more comprehensive example where the LLM works on a local Fastify app (running on http://localhost:8080) to create database migrations and API endpoints
 3.  `shellStrategy` - a LLM powered shell that can write files and run processes
 
