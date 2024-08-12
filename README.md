@@ -3,17 +3,19 @@
 [![](https://img.shields.io/discord/1113845829741056101?logo=discord&style=flat)](https://discord.gg/QnytC3Y7Wx)
 [![](https://img.shields.io/twitter/follow/enginelabsai)](https://x.com/enginelabsai)
 
-Engine Core demonstrates a pattern for enabling LLMs to undertake tasks of a given scope with a dynamic system prompt and a collection of tool functions. We call these chat strategies.
+Engine is an open source software engineer. 
 
-Chat strategies offer a means to dynamically alter the chat history, system prompts, and available tools on every run.
+It is model agnostic and extensible, based on 'strategies' and 'adapters'.
+
+Chat strategies offer a means to dynamically alter context, system prompts, and available tools on every run to optimise for a particular engineering task or environment.
 
 This project includes 3 example strategies:
 
-1.  `demoStrategy` - a simple illustrative example called which serves as a starting point for creating new strategies.
-2.  `backendStrategy` - a slightly more comprehensive example where the LLM works on a local Fastify app (running on http://localhost:8080) to create database migrations and API endpoints.
+1.  `demoStrategy` - a simple illustrative example called which serves as a starting point for creating new strategies
+2.  `backendStrategy` - a slightly more comprehensive example where the LLM works on a local Fastify app (running on http://localhost:8080) to create database migrations and API endpoints
 3.  `shellStrategy` - a LLM powered shell that can write files and run processes
 
-Additionally, we have extracted the LLM integrations (e.g., Anthropic or OpenAI) into adapters, which allow you to run the same app code and strategies while switching foundation models.
+Adapters make any foundational LLM (GPT, Claude) hot swappable.
 
 ## Getting started
 
