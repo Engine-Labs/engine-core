@@ -3,6 +3,8 @@
 [![](https://img.shields.io/discord/1113845829741056101?logo=discord&style=flat)](https://discord.gg/QnytC3Y7Wx)
 [![](https://img.shields.io/twitter/follow/enginelabsai)](https://x.com/enginelabsai)
 
+[🇫🇷 Version française](README.fr.md)
+
 Engine is an open source software engineer. 
 
 It is model agnostic and extensible, based on 'strategies' and 'adapters'.
